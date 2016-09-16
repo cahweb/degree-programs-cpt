@@ -39,12 +39,12 @@ function create_degree_type() {
 }
 
 function degree_init() {
-	add_meta_box("program-options-meta", "Options", "program_meta_options", "program", "normal", "low");
-    add_meta_box("program-options-meta-d", "Overview", "description_meta_options", "program", "normal", "low");
-    add_meta_box("program-options-meta-r", "Requirements", "requirements_meta_options", "program", "normal", "low");
+	add_meta_box("program-options-meta", "Options", "dp_general_meta_options", "program", "normal", "low");
+    add_meta_box("program-options-meta-d", "Overview", "dp_description_meta_options", "program", "normal", "low");
+    add_meta_box("program-options-meta-r", "Requirements", "dp_requirements_meta_options", "program", "normal", "low");
 }
 
-function program_meta_options(){
+function dp_general_meta_options(){
     global $post;
     $custom = get_post_custom($post->ID);
     $subtitle = $custom["subtitle"][0];
@@ -111,7 +111,7 @@ function program_meta_options(){
 <?php
 }
 
-function description_meta_options(){
+function dp_description_meta_options(){
     global $post;
     $custom = get_post_custom($post->ID);
     $description = $custom["description"][0];
@@ -120,7 +120,7 @@ function description_meta_options(){
     wp_editor( $description, $editor_id, $settings );
 }
 
-function requirements_meta_options(){
+function dp_requirements_meta_options(){
     global $post;
     $custom = get_post_custom($post->ID);
     $requirements = $custom["requirements"][0];
