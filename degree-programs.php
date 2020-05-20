@@ -14,8 +14,9 @@
 // error_reporting(E_ALL);
 
 add_action("admin_init", "degree_init");
-add_action('save_post', 'save_degree');
+add_action('save_post_program', 'save_degree');
 add_action('init', 'create_degree_type');
+add_action('admin_enqueue_scripts', 'degree_load_scripts' );
 
 function create_degree_type() {
     $args = array(
@@ -44,17 +45,26 @@ function degree_init() {
     add_meta_box("program-options-meta-r", "Requirements", "dp_requirements_meta_options", "program", "normal", "low");
 }
 
+function degree_load_scripts() {
+    global $post;
+
+    if( 'program' !== $post->post_type ) return;
+
+    wp_enqueue_script( 'meta-media-picker', plugin_dir_url(__FILE__) . "/meta-media-picker.js", ['jquery'], '20200430', true );
+}
+
 function dp_general_meta_options(){
     global $post;
     $custom = get_post_custom($post->ID);
-    $subtitle = $custom["subtitle"][0];
-    $catalog = $custom["catalog"][0];
-    $flyer = $custom["flyer"][0];
-    $level = $custom["level"][0];
-    $name = $custom["name"][0];
-    $email = $custom["email"][0];
-    $phone = $custom["phone"][0];
-    $location = $custom["location"][0];
+    $subtitle = isset( $custom["subtitle"][0] ) ? $custom["subtitle"][0] : '';
+    $catalog = isset( $custom["catalog"][0] ) ? $custom["catalog"][0] : '';
+    $flyer = isset( $custom["flyer"][0] ) ? $custom["flyer"][0] : '';
+    $flyer_label = isset( $custom['flyer-label'][0] ) ? $custom['flyer-label'][0] : '';
+    $level = isset( $custom["level"][0] ) ? $custom["level"][0] : '';
+    $name = isset( $custom["name"][0] ) ? $custom["name"][0] : '';
+    $email = isset( $custom["email"][0] ) ? $custom["email"][0] : '';
+    $phone = isset( $custom["phone"][0] ) ? $custom["phone"][0] : '';
+    $location = isset( $custom["location"][0] ) ? $custom["location"][0] : '';
     $fileName = "Choose or Upload a file";
     if($flyer != "") {
         $fileName = array_pop(explode('/', rtrim($flyer, '/')));
@@ -75,7 +85,11 @@ function dp_general_meta_options(){
     <tr>
         <td style="text-align:center"><label>Program Flyer: </label></td>
         <td><input type="text" name="flyer" class="meta-image" meta-image="1" value="<?php echo $flyer; ?>" hidden/>
-            <input type="button" class="button meta-image-button" meta-image="1" value="<?php echo $fileName; ?>" /> <a href="#" meta-image="1" class="meta-image-clear" <?=($flyer == "" ? "hidden" : "")?>>Remove</a></td>
+            <input type="button" id="flyer-upload" class="button meta-image-button" meta-image="1" value="<?php echo $fileName; ?>" /> <a href="#" meta-image="1" class="meta-image-clear" <?=($flyer == "" ? "hidden" : "")?>>Remove</a></td>
+    </tr>
+    <tr>
+        <td style="text-align:center"><label>Program Flyer Label: </label></td>
+        <td><input type="text" id="flyer-label" name="flyer-label" value="<?= $flyer_label ?>"></td>
     </tr>
     <tr>
         <td style="text-align:center"><label>Program Level: </label></td>
@@ -106,7 +120,6 @@ function dp_general_meta_options(){
         <td><input type="text" name="location" value="<?php echo $location; ?>" size="50"/></td>
     </tr>
 </table>
-    <script src="<?php echo get_stylesheet_uri() . '/../library/js/meta-media-picker.js'; ?>"></script>
 
 <?php
 }
@@ -114,7 +127,7 @@ function dp_general_meta_options(){
 function dp_description_meta_options(){
     global $post;
     $custom = get_post_custom($post->ID);
-    $description = $custom["description"][0];
+    $description = isset( $custom["description"][0] ) ? $custom['description'][0] : '';
     $editor_id = 'description';
     $settings = array( 'textarea_rows' => 6 );
     wp_editor( $description, $editor_id, $settings );
@@ -123,7 +136,7 @@ function dp_description_meta_options(){
 function dp_requirements_meta_options(){
     global $post;
     $custom = get_post_custom($post->ID);
-    $requirements = $custom["requirements"][0];
+    $requirements = isset( $custom["requirements"][0] ) ? $custom["requirements"][0] : '';
     $editor_id = 'requirements';
     $settings = array( 'textarea_rows' => 6 );
     wp_editor( $requirements, $editor_id, $settings );
@@ -131,6 +144,9 @@ function dp_requirements_meta_options(){
 
 function save_degree() {
     global $post;
+
+    if( !is_object( $post ) ) return;
+    
 	update_post_meta($post->ID, "description", $_POST["description"]);
     update_post_meta($post->ID, "subtitle", $_POST["subtitle"]);
     update_post_meta($post->ID, "requirements", $_POST["requirements"]);
@@ -140,6 +156,7 @@ function save_degree() {
     update_post_meta($post->ID, "location", $_POST["location"]);
     update_post_meta($post->ID, "catalog", $_POST["catalog"]);
     update_post_meta($post->ID, "flyer", $_POST["flyer"]);
+    update_post_meta($post->ID, 'flyer-label', $_POST['flyer-label']);
     update_post_meta($post->ID, "level", $_POST["level"]);
 }
 
